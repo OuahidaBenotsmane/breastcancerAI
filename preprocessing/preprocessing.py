@@ -25,6 +25,30 @@ df["CLAUDIN_SUBTYPE"] = df["CLAUDIN_SUBTYPE"].replace("claudin-low", "Claudin-lo
 df["HER2_SNP6"] = df["HER2_SNP6"].replace("UNDEF", pd.NA)
 df["CLAUDIN_SUBTYPE"] = df["CLAUDIN_SUBTYPE"].replace("NC", pd.NA)
 
+#Her2 & Claudin subtype contradiction fix 
+df = df[~((df["HER2_STATUS"] == "Positive") & (df["CLAUDIN_SUBTYPE"] == "LumA"))]
+print(df[(df["HER2_STATUS"] == "Positive") & (df["CLAUDIN_SUBTYPE"] == "LumA")].shape[0])  # should be 0
+
+#Claudin subtype & Er status contradiction fix
+df = df[~((df["CLAUDIN_SUBTYPE"] == "Basal") & (df["ER_IHC"] == "Positive"))]
+print(df[(df["CLAUDIN_SUBTYPE"] == "Basal") & (df["ER_IHC"] == "Positive")].shape[0])  # should be 0
+
+# Drop Stage 1 but more than 3 positive lymph nodes
+df = df[~((df["TUMOR_STAGE"] == 1) & (df["LYMPH_NODES_EXAMINED_POSITIVE"] > 3))]
+print(f"Shape after dropping: {df.shape}")
+
+#Drop Stage 4 but no positive lymph nodes
+df = df[~((df["TUMOR_STAGE"] == 4) & (df["LYMPH_NODES_EXAMINED_POSITIVE"] == 0))]
+print(df[(df["TUMOR_STAGE"] == 4) & (df["LYMPH_NODES_EXAMINED_POSITIVE"] == 0)].shape[0])  # should be 0
+
+# Drop NPI (composite of GRADE + TUMOR_SIZE + LYMPH_NODES)
+df = df.drop(columns=["NPI"])
+print(f"Shape after dropping NPI: {df.shape}")
+
+
+print("=== MISSING VALUES ===")
+print(df.isnull().sum()[df.isnull().sum() > 0].sort_values(ascending=False))
+
 # Drop only very high-missing columns
 missing_pct = df.isnull().mean()
 cols_to_drop = missing_pct[missing_pct > 0.70].index
@@ -79,7 +103,7 @@ if ord_cols:
     X_test[ord_cols] = encoder.transform(X_test[ord_cols])
 
 # One-hot encoding
-nominal_cols = X_train.select_dtypes(include="object").columns.tolist()
+nominal_cols = X_train.select_dtypes(include=["object", "string"]).columns.tolist()
 
 X_train = pd.get_dummies(X_train, columns=nominal_cols, drop_first=True)
 X_test = pd.get_dummies(X_test, columns=nominal_cols, drop_first=True)
