@@ -197,7 +197,7 @@ try:
 
     best_overall = all_results.loc[all_results["ROC-AUC"].idxmax()]
 
-    print("\n🏆 BEST OVERALL MODEL:")
+    print("\n BEST OVERALL MODEL:")
     print(f"Method : {best_overall['Method']}")
     print(f"Model  : {best_overall['Model']}")
     print(f"ROC-AUC: {best_overall['ROC-AUC']}")
@@ -208,4 +208,4 @@ try:
     print("\nSaved: final_comparison_all_methods.csv")
 
 except FileNotFoundError:
-    print("\n⚠️ Missing result files. Run all 3 scripts first (KNN, Median, MICE).")
+    print("\n Missing result files. Run all 3 scripts first (KNN, Median, MICE).")
